@@ -1,40 +1,74 @@
-import './App.css';
-import { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
+  // ✅ Correct Counter (useRef + functional update)
+  const [countCorrect, setCountCorrect] = useState(0);
   const intervalRef = useRef(null);
 
-  const increment = () => setCount(count + 1);
-  const decrement = () => setCount(count > 0 ? count - 1 : 0);
-  const reset = () => setCount(0);
-
-  // Start automatic increment
-  const startAutoIncrement = () => {
+  const startCorrect = () => {
     if (!intervalRef.current) {
       intervalRef.current = setInterval(() => {
-        setCount(prev => prev + 1);
+        setCountCorrect(prev => prev + 1); // functional update ✅
       }, 1000);
     }
   };
 
-  // Stop automatic increment
-  const stopAutoIncrement = () => {
+  const stopCorrect = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
   };
 
+  const resetCorrect = () => setCountCorrect(0);
+
+  // ❌ Stale Closure Counter
+  const [countStale, setCountStale] = useState(0);
+  const staleIntervalRef = useRef(null);
+
+  const startStale = () => {
+    if (!staleIntervalRef.current) {
+      staleIntervalRef.current = setInterval(() => {
+        setCountStale(countStale + 1); // stale closure ❌
+        console.log("Stale closure count:", countStale + 1);
+      }, 1000);
+    }
+  };
+
+  const stopStale = () => {
+    if (staleIntervalRef.current) {
+      clearInterval(staleIntervalRef.current);
+      staleIntervalRef.current = null;
+    }
+  };
+
+  const resetStale = () => {
+    setCountStale(0);
+    stopStale();
+  };
+
   return (
-    <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h1>Counter App</h1>
-      <h2>{count}</h2>
-      <button onClick={increment}>+</button>
-      <button onClick={decrement}>-</button>
-      <button onClick={reset}>Reset</button>
-      <button onClick={startAutoIncrement}>Start Auto</button>
-      <button onClick={stopAutoIncrement}>Stop Auto</button>
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1>React Counter Comparison</h1>
+
+      {/* Correct Counter */}
+      <div style={{ margin: "30px", padding: "20px", border: "2px solid green" }}>
+        <h2>✅ Correct Counter (useRef + prev)</h2>
+        <h3>{countCorrect}</h3>
+        <button onClick={startCorrect}>Start</button>
+        <button onClick={stopCorrect}>Stop</button>
+        <button onClick={resetCorrect}>Reset</button>
+      </div>
+
+      {/* Stale Closure Counter */}
+      <div style={{ margin: "30px", padding: "20px", border: "2px solid red" }}>
+        <h2>❌ Stale Closure Counter</h2>
+        <h3>{countStale}</h3>
+        <button onClick={startStale}>Start</button>
+        <button onClick={stopStale}>Stop</button>
+        <button onClick={resetStale}>Reset</button>
+      </div>
     </div>
   );
 }
